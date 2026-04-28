@@ -48,8 +48,8 @@
 
     button {
       padding: 10px 18px;
-      font-size: 16px;
-      margin-top: 18px;
+      font-size: 15px;
+      margin: 12px 5px 0 5px;
       cursor: pointer;
       border: none;
       border-radius: 6px;
@@ -59,6 +59,11 @@
 
     button:hover {
       background: #3a7ac0;
+    }
+
+    button:disabled {
+      background: #999;
+      cursor: not-allowed;
     }
 
     #result {
@@ -96,6 +101,11 @@
       color: #888;
       margin-top: 8px;
     }
+
+    .small-btn {
+      background: #666;
+      margin-top: 10px;
+    }
   </style>
 </head>
 
@@ -114,7 +124,8 @@
 
 <br>
 
-<button onclick="lookup()">Search</button>
+<button id="searchBtn" onclick="lookup()">Search</button>
+<button class="small-btn" onclick="clearAll()">Clear</button>
 
 <div class="hint">Example: 12-34-56</div>
 
@@ -142,7 +153,10 @@ fetch('sortcodes.csv')
 
 function lookup() {
   const result = document.getElementById("result");
+  const btn = document.getElementById("searchBtn");
+
   result.innerHTML = "Searching...";
+  btn.disabled = true;
 
   const p1 = document.getElementById("part1").value.trim();
   const p2 = document.getElementById("part2").value.trim();
@@ -150,6 +164,7 @@ function lookup() {
 
   if (!p1 || !p2 || !p3) {
     result.innerHTML = `<div class="error">Please enter all 3 parts of the sort code.</div>`;
+    btn.disabled = false;
     return;
   }
 
@@ -163,6 +178,10 @@ function lookup() {
         <div class="bank">${match.bank}</div>
         <div><span class="label">Branch:</span> ${match.branch}</div>
         <div><span class="label">Location:</span> ${match.location}</div>
+
+        <button class="small-btn" onclick="copyResult('${match.bank} | ${match.branch} | ${match.location}')">
+          Copy Result
+        </button>
       </div>
     `;
   } else {
@@ -173,9 +192,23 @@ function lookup() {
       </div>
     `;
   }
+
+  btn.disabled = false;
 }
 
-// UX enhancements (safe, unchanged logic)
+function clearAll() {
+  document.getElementById("part1").value = "";
+  document.getElementById("part2").value = "";
+  document.getElementById("part3").value = "";
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("part1").focus();
+}
+
+function copyResult(text) {
+  navigator.clipboard.writeText(text);
+  alert("Copied to clipboard");
+}
+
 function setupUX() {
   const p1 = document.getElementById("part1");
   const p2 = document.getElementById("part2");
