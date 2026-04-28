@@ -1,7 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>UK Sort Code Checker</title>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>UK Sort Code Checker | Instant Bank Lookup Tool</title>
+
+  <meta name="description" content="Free UK sort code checker. Instantly look up bank, branch and location details from a 6-digit sort code. Simple and fast lookup tool.">
+
+  <meta name="keywords" content="sort code checker, UK sort code lookup, bank sort code search, UK bank branch finder">
 
   <style>
     body {
@@ -11,23 +19,28 @@
       text-align: center;
       background: #fafafa;
       color: #222;
+      padding: 0 15px;
+    }
+
+    header {
+      margin-bottom: 20px;
     }
 
     h1 {
       font-size: 28px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
-    p {
-      color: #555;
-      margin-bottom: 25px;
+    .subtitle {
+      color: #666;
+      font-size: 15px;
     }
 
     .input-box {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 15px;
     }
 
     input {
@@ -106,25 +119,33 @@
       margin-top: 60px;
       font-size: 12px;
       color: #888;
-      line-height: 1.4;
+      line-height: 1.5;
     }
 
-    .meta {
-      font-size: 12px;
-      color: #999;
-      margin-top: 5px;
-    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 24px;
+      }
 
-    .small-btn {
-      background: #666;
-      margin-top: 10px;
+      input {
+        width: 45px;
+      }
+
+      .card {
+        min-width: 90%;
+      }
     }
   </style>
+
 </head>
 
 <body>
 
-<h1>UK Sort Code Checker</h1>
+<header>
+  <h1>UK Sort Code Checker</h1>
+  <div class="subtitle">Instant bank, branch and location lookup</div>
+</header>
+
 <p>Enter a 6-digit sort code using the boxes below</p>
 
 <div class="input-box">
@@ -138,15 +159,15 @@
 <br>
 
 <button id="searchBtn" onclick="lookup()">Search</button>
-<button class="small-btn" onclick="clearAll()">Clear</button>
+<button onclick="clearAll()">Clear</button>
 
 <div class="hint">Example: 12-34-56</div>
 
 <div id="result"></div>
 
 <div class="footer">
-  <div><strong>Disclaimer:</strong> This tool is for informational purposes only. Data accuracy is not guaranteed and should be verified with the relevant financial institution.</div>
-  <div class="meta">Dataset status: Static CSV lookup (no live verification)</div>
+  <p><strong>Disclaimer:</strong> This tool provides informational results only. Data accuracy is not guaranteed and should be verified with the relevant financial institution.</p>
+  <p>© UK Sort Code Checker — Static dataset lookup tool</p>
 </div>
 
 <script>
@@ -196,10 +217,6 @@ function lookup() {
         <div class="bank">${match.bank}</div>
         <div><span class="label">Branch:</span> ${match.branch}</div>
         <div><span class="label">Location:</span> ${match.location}</div>
-
-        <button class="small-btn" onclick="copyResult('${match.bank} | ${match.branch} | ${match.location}')">
-          Copy Result
-        </button>
       </div>
     `;
   } else {
@@ -220,11 +237,6 @@ function clearAll() {
   document.getElementById("part3").value = "";
   document.getElementById("result").innerHTML = "";
   document.getElementById("part1").focus();
-}
-
-function copyResult(text) {
-  navigator.clipboard.writeText(text);
-  alert("Copied to clipboard");
 }
 
 function setupUX() {
