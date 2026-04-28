@@ -1,138 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>UK Sort Code Checker | Instant Bank Lookup</title>
-
-<meta name="description" content="Free UK sort code checker. Instantly find bank, branch, and location details from any UK 6-digit sort code.">
-
-<style>
-
-body {
-  font-family: Arial, sans-serif;
-  background: #f6f7f9;
-  margin: 0;
-  padding: 0;
-  color: #222;
-}
-
-.container {
-  max-width: 720px;
-  margin: 60px auto;
-  padding: 20px;
-  text-align: center;
-}
-
-h1 {
-  font-size: 30px;
-  margin-bottom: 5px;
-}
-
-.sub {
-  color: #666;
-  margin-bottom: 25px;
-}
-
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 25px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  text-align: left;
-}
-
-.inputs {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-input {
-  width: 60px;
-  padding: 12px;
-  font-size: 16px;
-  text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-input:focus {
-  border-color: #4a90e2;
-  outline: none;
-}
-
-button {
-  padding: 10px 18px;
-  margin: 10px 5px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #4a90e2;
-  color: white;
-  font-size: 15px;
-}
-
-button:hover {
-  background: #3a7ac0;
-}
-
-.error {
-  color: #b00020;
-  margin-top: 20px;
-}
-
-.label {
-  font-weight: bold;
-  color: #555;
-}
-
-.footer {
-  margin-top: 60px;
-  font-size: 12px;
-  color: #888;
-  line-height: 1.5;
-}
-
-.suggestions {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #444;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-<h1>UK Sort Code Checker</h1>
-<div class="sub">Instant bank, branch and location lookup</div>
-
-<div class="inputs">
-  <input id="p1" maxlength="2" inputmode="numeric" placeholder="12">
-  <input id="p2" maxlength="2" inputmode="numeric" placeholder="34">
-  <input id="p3" maxlength="2" inputmode="numeric" placeholder="56">
-</div>
-
-<button onclick="lookup()">Search</button>
-<button onclick="clearAll()">Clear</button>
-
-<div id="result"></div>
-
-<div class="footer">
-  <p><strong>Disclaimer:</strong> This tool is for informational purposes only. Data may be incomplete or outdated and should be verified with official banking sources.</p>
-  <p>Dataset: Static CSV lookup (no live bank API)</p>
-</div>
-
-</div>
-
 <script>
 
 let data = [];
@@ -159,6 +24,14 @@ function clean(input) {
 
 function format(sc) {
   return sc.slice(0,2) + "-" + sc.slice(2,4) + "-" + sc.slice(4,6);
+}
+
+function allFilled() {
+  return (
+    document.getElementById("p1").value.length === 2 &&
+    document.getElementById("p2").value.length === 2 &&
+    document.getElementById("p3").value.length === 2
+  );
 }
 
 function lookup() {
@@ -194,7 +67,9 @@ function lookup() {
 
   } else {
 
-    const similar = data.filter(x => x.sort.startsWith(cleaned.slice(0,2))).slice(0,3);
+    const similar = data.filter(x =>
+      x.sort.replace(/-/g,'').startsWith(cleaned.slice(0,2))
+    ).slice(0,3);
 
     let html = `<div class="error"><strong>No exact match found</strong></div>`;
 
@@ -215,9 +90,44 @@ function clearAll() {
   document.getElementById("p2").value = "";
   document.getElementById("p3").value = "";
   document.getElementById("result").innerHTML = "";
+  document.getElementById("p1").focus();
 }
 
-</script>
+function setupUX() {
 
-</body>
-</html>
+  const p1 = document.getElementById("p1");
+  const p2 = document.getElementById("p2");
+  const p3 = document.getElementById("p3");
+
+  const inputs = [p1, p2, p3];
+
+  inputs.forEach((input, idx) => {
+
+    input.addEventListener("input", () => {
+
+      // only digits
+      input.value = input.value.replace(/\D/g, "");
+
+      // auto move to next box
+      if (input.value.length === 2 && inputs[idx + 1]) {
+        inputs[idx + 1].focus();
+      }
+
+      // auto search when complete
+      if (allFilled()) {
+        lookup();
+      }
+
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") lookup();
+    });
+
+  });
+
+}
+
+window.addEventListener("load", setupUX);
+
+</script>
