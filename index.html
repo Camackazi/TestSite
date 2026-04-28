@@ -5,11 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>UK Sort Code Checker | Instant Bank Lookup Tool</title>
+  <title>UK Sort Code Checker | Instant Lookup Tool</title>
 
-  <meta name="description" content="Free UK sort code checker. Instantly look up bank, branch and location details from a 6-digit sort code. Simple and fast lookup tool.">
-
-  <meta name="keywords" content="sort code checker, UK sort code lookup, bank sort code search, UK bank branch finder">
+  <meta name="description" content="Free UK sort code checker. Instantly find bank, branch and location details from a 6-digit sort code.">
 
   <style>
     body {
@@ -22,10 +20,6 @@
       padding: 0 15px;
     }
 
-    header {
-      margin-bottom: 20px;
-    }
-
     h1 {
       font-size: 28px;
       margin-bottom: 8px;
@@ -33,14 +27,14 @@
 
     .subtitle {
       color: #666;
-      font-size: 15px;
+      margin-bottom: 20px;
     }
 
     .input-box {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-top: 15px;
+      margin-top: 10px;
     }
 
     input {
@@ -52,11 +46,12 @@
       border-radius: 6px;
       outline: none;
       background: white;
+      transition: 0.2s;
     }
 
-    input:focus {
+    input.filled {
       border-color: #4a90e2;
-      box-shadow: 0 0 3px rgba(74,144,226,0.4);
+      box-shadow: 0 0 4px rgba(74,144,226,0.3);
     }
 
     button {
@@ -119,21 +114,6 @@
       margin-top: 60px;
       font-size: 12px;
       color: #888;
-      line-height: 1.5;
-    }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 24px;
-      }
-
-      input {
-        width: 45px;
-      }
-
-      .card {
-        min-width: 90%;
-      }
     }
   </style>
 
@@ -141,12 +121,10 @@
 
 <body>
 
-<header>
-  <h1>UK Sort Code Checker</h1>
-  <div class="subtitle">Instant bank, branch and location lookup</div>
-</header>
+<h1>UK Sort Code Checker</h1>
+<div class="subtitle">Instant bank, branch and location lookup</div>
 
-<p>Enter a 6-digit sort code using the boxes below</p>
+<p>Enter a 6-digit sort code</p>
 
 <div class="input-box">
   <input id="part1" maxlength="2" inputmode="numeric" placeholder="12">
@@ -166,21 +144,20 @@
 <div id="result"></div>
 
 <div class="footer">
-  <p><strong>Disclaimer:</strong> This tool provides informational results only. Data accuracy is not guaranteed and should be verified with the relevant financial institution.</p>
-  <p>© UK Sort Code Checker — Static dataset lookup tool</p>
+  <p>Informational tool only — verify with official sources where required.</p>
 </div>
 
 <script>
+
 let data = [];
 
 fetch('sortcodes.csv')
-  .then(response => response.text())
+  .then(r => r.text())
   .then(text => {
     const rows = text.split('\n').slice(1);
 
     data = rows.map(row => {
       const cols = row.split(',');
-
       return {
         sort_code: (cols[0] || "").trim(),
         bank: (cols[1] || "").trim(),
@@ -189,6 +166,14 @@ fetch('sortcodes.csv')
       };
     });
   });
+
+function allFilled() {
+  return (
+    document.getElementById("part1").value.length === 2 &&
+    document.getElementById("part2").value.length === 2 &&
+    document.getElementById("part3").value.length === 2
+  );
+}
 
 function lookup() {
   const result = document.getElementById("result");
@@ -202,13 +187,12 @@ function lookup() {
   const p3 = document.getElementById("part3").value.trim();
 
   if (!p1 || !p2 || !p3) {
-    result.innerHTML = `<div class="error">Please enter all 3 parts of the sort code.</div>`;
+    result.innerHTML = `<div class="error">Please complete all 3 boxes.</div>`;
     btn.disabled = false;
     return;
   }
 
   const input = `${p1}-${p2}-${p3}`;
-
   const match = data.find(d => d.sort_code === input);
 
   if (match) {
@@ -221,10 +205,7 @@ function lookup() {
     `;
   } else {
     result.innerHTML = `
-      <div class="error">
-        <strong>No exact match found</strong><br>
-        Please check the sort code format and try again.
-      </div>
+      <div class="error"><strong>No match found</strong></div>
     `;
   }
 
@@ -244,28 +225,38 @@ function setupUX() {
   const p2 = document.getElementById("part2");
   const p3 = document.getElementById("part3");
 
-  [p1, p2, p3].forEach(input => {
-    input.addEventListener("input", () => {
-      input.value = input.value.replace(/\D/g, "");
+  const inputs = [p1, p2, p3];
+
+  inputs.forEach(i => {
+    i.addEventListener("input", () => {
+
+      i.value = i.value.replace(/\D/g, "");
+
+      // visual state
+      inputs.forEach(x => {
+        x.classList.toggle("filled", x.value.length === 2);
+      });
+
+      // auto move
+      if (p1.value.length === 2) p2.focus();
+      if (p2.value.length === 2) p3.focus();
+
+      // auto search when complete
+      if (allFilled()) {
+        lookup();
+      }
     });
   });
 
-  p1.addEventListener("input", () => {
-    if (p1.value.length === 2) p2.focus();
-  });
-
-  p2.addEventListener("input", () => {
-    if (p2.value.length === 2) p3.focus();
-  });
-
-  [p1, p2, p3].forEach(input => {
-    input.addEventListener("keydown", (e) => {
+  inputs.forEach(i => {
+    i.addEventListener("keydown", (e) => {
       if (e.key === "Enter") lookup();
     });
   });
 }
 
 window.addEventListener("load", setupUX);
+
 </script>
 
 </body>
