@@ -36,7 +36,7 @@
 
 <h1>UK Sort Code Checker</h1>
 
-<p>Enter a sort code</p>
+<p>Enter a sort code:</p>
 
 <div>
   <input id="part1" maxlength="2" placeholder="12">
@@ -55,7 +55,7 @@
 <script>
 let data = [];
 
-// Load CSV file
+// Load the CSV file
 fetch('sortcodes.csv')
   .then(response => response.text())
   .then(text => {
