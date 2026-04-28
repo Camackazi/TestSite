@@ -2,48 +2,53 @@
 <html>
 <head>
   <title>UK Sort Code Checker</title>
+
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       max-width: 700px;
       margin: 60px auto;
       text-align: center;
     }
+
     input {
+      width: 50px;
       padding: 10px;
       font-size: 16px;
-      width: 200px;
+      text-align: center;
     }
+
     button {
       padding: 10px 15px;
       font-size: 16px;
+      margin-top: 15px;
       cursor: pointer;
     }
+
     #result {
       margin-top: 30px;
       font-size: 18px;
     }
   </style>
 </head>
+
 <body>
 
 <h1>UK Sort Code Checker</h1>
 
-<p>Enter a sort code (e.g. 12-34-56)</p>
+<p>Enter a sort code</p>
 
 <div>
-  <input id="part1" maxlength="2" placeholder="12" style="width:50px; text-align:center;">
+  <input id="part1" maxlength="2" placeholder="12">
   -
-  <input id="part2" maxlength="2" placeholder="34" style="width:50px; text-align:center;">
+  <input id="part2" maxlength="2" placeholder="34">
   -
-  <input id="part3" maxlength="2" placeholder="56" style="width:50px; text-align:center;">
+  <input id="part3" maxlength="2" placeholder="56">
 </div>
 
 <br>
 
 <button onclick="lookup()">Search</button>
-
-<div id="result"></div>
 
 <div id="result"></div>
 
@@ -55,13 +60,15 @@ fetch('sortcodes.csv')
   .then(response => response.text())
   .then(text => {
     const rows = text.split('\n').slice(1);
+
     data = rows.map(row => {
       const cols = row.split(',');
+
       return {
-        sort_code: cols[0],
-        bank: cols[1],
-        branch: cols[2],
-        location: cols[3]
+        sort_code: (cols[0] || "").trim(),
+        bank: (cols[1] || "").trim(),
+        branch: (cols[2] || "").trim(),
+        location: (cols[3] || "").trim()
       };
     });
   });
@@ -93,3 +100,7 @@ function lookup() {
     result.innerHTML = "No match found.";
   }
 }
+</script>
+
+</body>
+</html>
