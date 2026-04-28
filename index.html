@@ -55,7 +55,7 @@
 <script>
 let data = [];
 
-// Load the CSV file
+// Load CSV file
 fetch('sortcodes.csv')
   .then(response => response.text())
   .then(text => {
@@ -100,6 +100,42 @@ function lookup() {
     result.innerHTML = "No match found.";
   }
 }
+
+/* ===== UX IMPROVEMENTS ===== */
+
+function setupUX() {
+  const p1 = document.getElementById("part1");
+  const p2 = document.getElementById("part2");
+  const p3 = document.getElementById("part3");
+
+  // Only allow numbers
+  [p1, p2, p3].forEach(input => {
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/\D/g, "");
+    });
+  });
+
+  // Auto-move between boxes
+  p1.addEventListener("input", () => {
+    if (p1.value.length === 2) p2.focus();
+  });
+
+  p2.addEventListener("input", () => {
+    if (p2.value.length === 2) p3.focus();
+  });
+
+  // Press Enter to search
+  [p1, p2, p3].forEach(input => {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        lookup();
+      }
+    });
+  });
+}
+
+// Run UX setup when page loads
+window.addEventListener("load", setupUX);
 </script>
 
 </body>
