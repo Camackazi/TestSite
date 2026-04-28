@@ -31,8 +31,19 @@
 
 <p>Enter a sort code (e.g. 12-34-56)</p>
 
-<input id="sortcode" placeholder="12-34-56">
+<div>
+  <input id="part1" maxlength="2" placeholder="12" style="width:50px; text-align:center;">
+  -
+  <input id="part2" maxlength="2" placeholder="34" style="width:50px; text-align:center;">
+  -
+  <input id="part3" maxlength="2" placeholder="56" style="width:50px; text-align:center;">
+</div>
+
+<br>
+
 <button onclick="lookup()">Search</button>
+
+<div id="result"></div>
 
 <div id="result"></div>
 
@@ -56,8 +67,18 @@ fetch('sortcodes.csv')
   });
 
 function lookup() {
-  const input = document.getElementById("sortcode").value.trim();
+  const p1 = document.getElementById("part1").value.trim();
+  const p2 = document.getElementById("part2").value.trim();
+  const p3 = document.getElementById("part3").value.trim();
+
   const result = document.getElementById("result");
+
+  if (!p1 || !p2 || !p3) {
+    result.innerHTML = "Please enter all 3 parts of the sort code.";
+    return;
+  }
+
+  const input = `${p1}-${p2}-${p3}`;
 
   const match = data.find(d => d.sort_code === input);
 
@@ -72,7 +93,3 @@ function lookup() {
     result.innerHTML = "No match found.";
   }
 }
-</script>
-
-</body>
-</html>
