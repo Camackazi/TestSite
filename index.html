@@ -19,51 +19,40 @@ body {
   color: #222;
 }
 
+.nav {
+  background: white;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.nav a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #4a90e2;
+  font-size: 14px;
+}
+
 .container {
   max-width: 720px;
-  margin: 60px auto;
+  margin: 40px auto;
   padding: 20px;
   text-align: center;
 }
 
 h1 {
   font-size: 30px;
-  margin-bottom: 5px;
 }
 
 .sub {
   color: #666;
-  margin-bottom: 10px;
-}
-
-.nav-link {
   margin-bottom: 25px;
-  font-size: 14px;
-}
-
-.nav-link a {
-  color: #4a90e2;
-  text-decoration: none;
-}
-
-.nav-link a:hover {
-  text-decoration: underline;
-}
-
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 25px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  text-align: left;
 }
 
 .inputs {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 15px;
 }
 
 input {
@@ -75,11 +64,6 @@ input {
   border-radius: 8px;
 }
 
-input:focus {
-  border-color: #4a90e2;
-  outline: none;
-}
-
 button {
   padding: 10px 18px;
   margin: 10px 5px;
@@ -88,34 +72,21 @@ button {
   cursor: pointer;
   background: #4a90e2;
   color: white;
-  font-size: 15px;
 }
 
-button:hover {
-  background: #3a7ac0;
-}
-
-.error {
-  color: #b00020;
-  margin-top: 20px;
-}
-
-.label {
-  font-weight: bold;
-  color: #555;
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 25px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  text-align: left;
 }
 
 .footer {
   margin-top: 60px;
   font-size: 12px;
   color: #888;
-  line-height: 1.5;
-}
-
-.suggestions {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #444;
 }
 
 </style>
@@ -124,19 +95,22 @@ button:hover {
 
 <body>
 
+<div class="nav">
+  <a href="index.html">Home</a>
+  <a href="what-is-sort-code.html">What is a sort code?</a>
+  <a href="how-to-find-sort-code.html">Find a sort code</a>
+  <a href="how-to-use-sort-code.html">Use a sort code</a>
+</div>
+
 <div class="container">
 
 <h1>UK Sort Code Checker</h1>
 <div class="sub">Instant bank, branch and location lookup</div>
 
-<div class="nav-link">
-  <a href="what-is-sort-code.html">What is a sort code?</a>
-</div>
-
 <div class="inputs">
-  <input id="p1" maxlength="2" inputmode="numeric" placeholder="12">
-  <input id="p2" maxlength="2" inputmode="numeric" placeholder="34">
-  <input id="p3" maxlength="2" inputmode="numeric" placeholder="56">
+  <input id="p1" maxlength="2">
+  <input id="p2" maxlength="2">
+  <input id="p3" maxlength="2">
 </div>
 
 <button onclick="lookup()">Search</button>
@@ -145,42 +119,30 @@ button:hover {
 <div id="result"></div>
 
 <div class="footer">
-  <p><strong>Disclaimer:</strong> This tool is for informational purposes only. Data may be incomplete or outdated and should be verified with official banking sources.</p>
-  <p>Dataset: Static CSV lookup (no live bank API)</p>
+  <p><strong>Disclaimer:</strong> Verify details with your bank.</p>
 </div>
 
 </div>
 
 <script>
-
 let data = [];
 
 fetch('sortcodes.csv')
-  .then(r => r.text())
-  .then(t => {
-    const rows = t.split('\n').slice(1);
-
-    data = rows.map(r => {
-      const c = r.split(',');
-      return {
-        sort: (c[0] || "").trim(),
-        bank: (c[1] || "").trim(),
-        branch: (c[2] || "").trim(),
-        location: (c[3] || "").trim()
-      };
-    });
+.then(r => r.text())
+.then(t => {
+  const rows = t.split('\n').slice(1);
+  data = rows.map(r => {
+    const c = r.split(',');
+    return {
+      sort: (c[0] || "").trim(),
+      bank: (c[1] || "").trim(),
+      branch: (c[2] || "").trim(),
+      location: (c[3] || "").trim()
+    };
   });
-
-function clean(input) {
-  return input.replace(/[^0-9]/g, '');
-}
-
-function format(sc) {
-  return sc.slice(0,2) + "-" + sc.slice(2,4) + "-" + sc.slice(4,6);
-}
+});
 
 function lookup() {
-
   const r = document.getElementById("result");
 
   const raw = [
@@ -189,52 +151,32 @@ function lookup() {
     document.getElementById("p3").value
   ].join("");
 
-  const cleaned = clean(raw);
-
-  if (cleaned.length !== 6) {
-    r.innerHTML = `<div class="error">Please enter a full 6-digit sort code.</div>`;
+  if (raw.length !== 6) {
+    r.innerHTML = "Enter full sort code";
     return;
   }
 
-  const formatted = format(cleaned);
+  const formatted = raw.slice(0,2)+"-"+raw.slice(2,4)+"-"+raw.slice(4,6);
 
   const match = data.find(x => x.sort === formatted);
 
   if (match) {
-
-    r.innerHTML = `
-      <div class="card">
-        <div><strong>${match.bank}</strong></div><br>
-        <div><span class="label">Branch:</span> ${match.branch}</div>
-        <div><span class="label">Location:</span> ${match.location}</div>
-      </div>
-    `;
-
+    r.innerHTML = `<div class="card">
+      <strong>${match.bank}</strong><br>
+      ${match.branch}<br>
+      ${match.location}
+    </div>`;
   } else {
-
-    const similar = data.filter(x => x.sort.startsWith(cleaned.slice(0,2))).slice(0,3);
-
-    let html = `<div class="error"><strong>No exact match found</strong></div>`;
-
-    if (similar.length) {
-      html += `<div class="suggestions"><strong>Similar matches:</strong><br>`;
-      similar.forEach(s => {
-        html += `${s.sort} — ${s.bank}<br>`;
-      });
-      html += `</div>`;
-    }
-
-    r.innerHTML = html;
+    r.innerHTML = "No match found";
   }
 }
 
 function clearAll() {
-  document.getElementById("p1").value = "";
-  document.getElementById("p2").value = "";
-  document.getElementById("p3").value = "";
-  document.getElementById("result").innerHTML = "";
+  document.getElementById("p1").value="";
+  document.getElementById("p2").value="";
+  document.getElementById("p3").value="";
+  document.getElementById("result").innerHTML="";
 }
-
 </script>
 
 </body>
