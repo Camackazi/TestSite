@@ -90,13 +90,22 @@ function lookup() {
   const match = data.find(d => d.sort_code === input);
 
   if (match) {
-    result.innerHTML = `
-      <h3>Result Found</h3>
-      <p><strong>Bank:</strong> ${match.bank}</p>
+  result.innerHTML = `
+    <div style="
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 8px;
+      text-align: left;
+      display: inline-block;
+      min-width: 280px;
+    ">
+      <h2 style="margin-top:0;">${match.bank}</h2>
       <p><strong>Branch:</strong> ${match.branch}</p>
       <p><strong>Location:</strong> ${match.location}</p>
-    `;
-  } else {
+    </div>
+  `;
+} else {
   result.innerHTML = `
     <h3>No exact match found</h3>
     <p>We couldn't find a bank for <strong>${input}</strong>.</p>
