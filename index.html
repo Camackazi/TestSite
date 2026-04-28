@@ -1,10 +1,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My First Website</title>
+  <title>UK Sort Code Checker</title>
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 700px;
+      margin: 60px auto;
+      text-align: center;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      width: 200px;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 30px;
+      font-size: 18px;
+    }
+  </style>
 </head>
-<body style="font-family: Arial; text-align: center; margin-top: 100px;">
-  <h1>Hello 👋</h1>
-  <p>This is my first live website.</p>
+<body>
+
+<h1>UK Sort Code Checker</h1>
+
+<p>Enter a sort code (e.g. 12-34-56)</p>
+
+<input id="sortcode" placeholder="12-34-56">
+<button onclick="lookup()">Search</button>
+
+<div id="result"></div>
+
+<script>
+let data = [];
+
+// Load CSV file
+fetch('sortcodes.csv')
+  .then(response => response.text())
+  .then(text => {
+    const rows = text.split('\n').slice(1);
+    data = rows.map(row => {
+      const cols = row.split(',');
+      return {
+        sort_code: cols[0],
+        bank: cols[1],
+        branch: cols[2],
+        location: cols[3]
+      };
+    });
+  });
+
+function lookup() {
+  const input = document.getElementById("sortcode").value.trim();
+  const result = document.getElementById("result");
+
+  const match = data.find(d => d.sort_code === input);
+
+  if (match) {
+    result.innerHTML = `
+      <h3>Result Found</h3>
+      <p><strong>Bank:</strong> ${match.bank}</p>
+      <p><strong>Branch:</strong> ${match.branch}</p>
+      <p><strong>Location:</strong> ${match.location}</p>
+    `;
+  } else {
+    result.innerHTML = "No match found.";
+  }
+}
+</script>
+
 </body>
 </html>
