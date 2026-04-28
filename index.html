@@ -1,26 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>UK Sort Code Checker | Instant Bank Lookup</title>
+
+<meta name="description" content="Free UK sort code checker. Instantly find bank, branch, and location details from any UK 6-digit sort code.">
+
+<style>
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f6f7f9;
+  margin: 0;
+  padding: 0;
+  color: #222;
+}
+
+.container {
+  max-width: 720px;
+  margin: 60px auto;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 30px;
+  margin-bottom: 5px;
+}
+
+.sub {
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 25px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  text-align: left;
+}
+
+.inputs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+input {
+  width: 60px;
+  padding: 12px;
+  font-size: 16px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+input:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+button {
+  padding: 10px 18px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #4a90e2;
+  color: white;
+  font-size: 15px;
+}
+
+button:hover {
+  background: #3a7ac0;
+}
+
+.error {
+  color: #b00020;
+  margin-top: 20px;
+}
+
+.label {
+  font-weight: bold;
+  color: #555;
+}
+
+.footer {
+  margin-top: 60px;
+  font-size: 12px;
+  color: #888;
+  line-height: 1.5;
+}
+
+.suggestions {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #444;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>UK Sort Code Checker</h1>
+<div class="sub">Instant bank, branch and location lookup</div>
+
+<div class="inputs">
+  <input id="p1" maxlength="2" inputmode="numeric" placeholder="12">
+  <input id="p2" maxlength="2" inputmode="numeric" placeholder="34">
+  <input id="p3" maxlength="2" inputmode="numeric" placeholder="56">
+</div>
+
+<button onclick="lookup()">Search</button>
+<button onclick="clearAll()">Clear</button>
+
+<div id="result"></div>
+
+<div class="footer">
+  <p><strong>Disclaimer:</strong> This tool is for informational purposes only. Data may be incomplete or outdated and should be verified with official banking sources.</p>
+  <p>Dataset: Static CSV lookup (no live bank API)</p>
+</div>
+
+</div>
+
 <script>
 
 let data = [];
 
 fetch('sortcodes.csv')
   .then(r => r.text())
-  .then(text => {
-    const rows = text.split('\n').slice(1);
+  .then(t => {
+    const rows = t.split('\n').slice(1);
 
-    data = rows.map(row => {
-      const cols = row.split(',');
-
+    data = rows.map(r => {
+      const c = r.split(',');
       return {
-        sort: (cols[0] || "").trim(),
-        bank: (cols[1] || "").trim(),
-        branch: (cols[2] || "").trim(),
-        location: (cols[3] || "").trim()
+        sort: (c[0] || "").trim(),
+        bank: (c[1] || "").trim(),
+        branch: (c[2] || "").trim(),
+        location: (c[3] || "").trim()
       };
     });
   });
 
 function clean(input) {
-  return input.replace(/[^0-9]/g, "");
+  return input.replace(/[^0-9]/g, '');
 }
 
 function format(sc) {
@@ -29,11 +163,7 @@ function format(sc) {
 
 function lookup() {
 
-  const result = document.getElementById("result");
-  const btn = document.getElementById("searchBtn");
-
-  result.innerHTML = "Searching...";
-  btn.disabled = true;
+  const r = document.getElementById("result");
 
   const raw = [
     document.getElementById("p1").value,
@@ -44,8 +174,7 @@ function lookup() {
   const cleaned = clean(raw);
 
   if (cleaned.length !== 6) {
-    result.innerHTML = `<div class="error">Please enter a full 6-digit sort code.</div>`;
-    btn.disabled = false;
+    r.innerHTML = `<div class="error">Please enter a full 6-digit sort code.</div>`;
     return;
   }
 
@@ -55,34 +184,30 @@ function lookup() {
 
   if (match) {
 
-    result.innerHTML = `
+    r.innerHTML = `
       <div class="card">
-        <div><strong>${match.bank}</strong></div>
-        <div><strong>Branch:</strong> ${match.branch}</div>
-        <div><strong>Location:</strong> ${match.location}</div>
+        <div><strong>${match.bank}</strong></div><br>
+        <div><span class="label">Branch:</span> ${match.branch}</div>
+        <div><span class="label">Location:</span> ${match.location}</div>
       </div>
     `;
 
   } else {
 
-    const similar = data
-      .filter(x => x.sort.startsWith(cleaned.slice(0,2)))
-      .slice(0,3);
+    const similar = data.filter(x => x.sort.startsWith(cleaned.slice(0,2))).slice(0,3);
 
     let html = `<div class="error"><strong>No exact match found</strong></div>`;
 
     if (similar.length) {
-      html += `<div class="suggestion"><strong>Similar matches:</strong><br>`;
+      html += `<div class="suggestions"><strong>Similar matches:</strong><br>`;
       similar.forEach(s => {
         html += `${s.sort} — ${s.bank}<br>`;
       });
       html += `</div>`;
     }
 
-    result.innerHTML = html;
+    r.innerHTML = html;
   }
-
-  btn.disabled = false;
 }
 
 function clearAll() {
@@ -93,3 +218,6 @@ function clearAll() {
 }
 
 </script>
+
+</body>
+</html>
