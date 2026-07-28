@@ -1,0 +1,88 @@
+          {entryMode === "keypad" ? (
+            <NumberPad value={entry} onChange={setEntry} onSubmit={() => recordScoringVisit(Number(entry))} />
+          ) : (
+            <Dartboard hits={hits} onChange={setHits} onSubmit={submitDartboardTraining} submitLabel={`Record visit ${scores.length + 1}`} compact requireThreeDarts />
+          )}
+        </section>
+        <p className="status-message">{message || "Record ten visits to establish a focused scoring average."}</p>
+        <section className="visit-strip">
+          {Array.from({ length: 10 }, (_, index) => <span key={index} className={scores[index] !== undefined ? "filled" : ""}>{scores[index] ?? index + 1}</span>)}
+        </section>
+        {scores.length > 0 && <button className="secondary-button" onClick={() => setScores((items) => items.slice(0, -1))}>Undo last visit</button>}
+      </main>
+    );
+  }
+
+  if (mode === "doubles") {
+    return (
+      <main className="landing-shell section-shell doubles-screen">
+        <header className="section-header"><button className="icon-button" onClick={() => setMode("home")}>←</button><div><p className="eyebrow">DOUBLES LADDER</p><p className="brand-subtitle">D1–D20 and bull · {profile.name}</p></div></header>
+        <section className="double-target-card">
+          <span>Target {currentDoubleIndex + 1} of {DOUBLE_TARGETS.length}</span>
+          <strong>{currentDouble === 25 ? "Bull" : `D${currentDouble}`}</strong>
+          <p>Record how many darts it took to hit the target, or mark the visit as missed.</p>
+        </section>
+        <div className="double-result-grid">
+          <button onClick={() => recordDouble(1)}><strong>1 dart</strong><span>Hit first dart</span></button>
+          <button onClick={() => recordDouble(2)}><strong>2 darts</strong><span>Hit second dart</span></button>
+          <button onClick={() => recordDouble(3)}><strong>3 darts</strong><span>Hit third dart</span></button>
+          <button className="miss" onClick={() => recordDouble(null)}><strong>Miss</strong><span>No hit this visit</span></button>
+        </div>
+        <section className="ladder-progress">
+          {DOUBLE_TARGETS.map((target, index) => {
+            const result = doubleResults[index];
+            return <span key={target} className={result === null ? "missed" : result ? "hit" : index === currentDoubleIndex ? "current" : ""}>{target === 25 ? "B" : target}</span>;
+          })}
+        </section>
+        {doubleResults.length > 0 && <button className="secondary-button" onClick={() => setDoubleResults((items) => items.slice(0, -1))}>Undo last target</button>}
+      </main>
+    );
+  }
+
+  if (mode === "summary" && lastSession) {
+    return (
+      <main className="landing-shell section-shell">
+        <header className="section-header"><button className="icon-button" onClick={() => setMode("home")}>←</button><div><p className="eyebrow">SESSION COMPLETE</p><p className="brand-subtitle">Saved to {profile.name}&apos;s progress</p></div></header>
+        <section className="training-summary-card">
+          <span className="status-chip">Training complete</span>
+          <h1>{lastSession.kind === "scoring-10" ? lastSession.average.toFixed(2) : `${lastSession.hitRate.toFixed(0)}%`}</h1>
+          <p>{summaryCopy}</p>
+          {lastSession.kind === "scoring-10" ? (
+            <div className="summary-metrics"><div><span>100+</span><strong>{lastSession.hundreds}</strong></div><div><span>140+</span><strong>{lastSession.oneForties}</strong></div><div><span>180s</span><strong>{lastSession.oneEighties}</strong></div></div>
+          ) : (
+            <div className="summary-metrics"><div><span>Hits</span><strong>{lastSession.hits}</strong></div><div><span>Targets</span><strong>{lastSession.targets}</strong></div><div><span>Darts</span><strong>{lastSession.dartsUsed}</strong></div></div>
+          )}
+        </section>
+        <button className="primary-button" onClick={() => resetTraining(lastSession.kind === "scoring-10" ? "scoring" : "doubles")}>Repeat session</button>
+        <button className="secondary-button" onClick={() => setMode("home")}>Back to training</button>
+      </main>
+    );
+  }
+
+  return (
+    <main className="landing-shell section-shell">
+      <section className="section-intro">
+        <span className="status-chip">Training</span>
+        <h1>Practice with a purpose.</h1>
+        <p>Short sessions that turn every visit into useful progress data for {profile.name}.</p>
+      </section>
+      <section className="training-grid">
+        <button onClick={() => resetTraining("scoring")}>
+          <span className="training-icon">123</span><strong>10-visit scoring</strong><p>Measure your scoring average across a focused set of 30 darts.</p><small>About 3 minutes</small>
+        </button>
+        <button onClick={() => resetTraining("doubles")}>
+          <span className="training-icon">◎</span><strong>Doubles ladder</strong><p>Work through D1 to D20 and bull, recording each three-dart visit.</p><small>Accuracy practice</small>
+        </button>
+      </section>
+      <section className="progress-card">
+        <div className="section-heading"><div><span>Recent training</span><strong>Latest sessions</strong></div><small>{profileSessions.length} total</small></div>
+        <div className="recent-legs">
+          {recent.map((session) => (
+            <div key={session.id}><div><strong>{session.kind === "scoring-10" ? "10-visit scoring" : "Doubles ladder"}</strong><span>{new Date(session.completedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span></div><div><strong>{session.kind === "scoring-10" ? session.average.toFixed(2) : `${session.hitRate.toFixed(0)}%`}</strong><span>{session.kind === "scoring-10" ? "average" : `${session.hits}/${session.targets} hits`}</span></div></div>
+          ))}
+          {!recent.length && <span className="muted-copy">Complete a training session and it will appear here.</span>}
+        </div>
+      </section>
+    </main>
+  );
+}
