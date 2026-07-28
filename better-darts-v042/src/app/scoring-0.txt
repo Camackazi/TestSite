@@ -1,0 +1,166 @@
+.progress-shell { padding-bottom: 34px; }
+.progress-hero { margin-top: 18px; padding: 20px 2px 6px; }
+.progress-hero h1 { max-width: 520px; }
+.progress-hero p { max-width: 560px; color: var(--muted); line-height: 1.5; }
+.progress-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
+.progress-metrics article { min-height: 94px; padding: 14px; border: 1px solid var(--border); border-radius: 17px; background: var(--panel); }
+.progress-metrics article:first-child { border-top: 3px solid var(--red); }
+.progress-metrics article:nth-child(2) { border-top: 3px solid var(--green); }
+.progress-metrics span, .progress-metrics strong { display: block; }
+.progress-metrics span { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; }
+.progress-metrics strong { margin-top: 10px; font-size: 1.45rem; }
+.progress-card { margin-top: 10px; padding: 15px; border: 1px solid var(--border); border-radius: 19px; background: var(--panel); }
+.section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.section-heading span, .section-heading strong { display: block; }
+.section-heading span, .section-heading small { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; }
+.section-heading strong { margin-top: 3px; font-size: .95rem; }
+.progress-chart { height: 210px; display: grid; grid-template-columns: repeat(10, minmax(18px, 1fr)); align-items: end; gap: 6px; margin-top: 18px; }
+.progress-bar-column { height: 100%; min-width: 0; display: grid; grid-template-rows: 22px 1fr 18px; align-items: end; text-align: center; }
+.progress-value { color: var(--muted); font-size: .61rem; overflow: hidden; }
+.progress-bar-track { position: relative; height: 100%; border-radius: 8px 8px 3px 3px; background: rgba(255,255,255,.045); overflow: hidden; }
+.progress-bar { position: absolute; inset: auto 0 0; border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, var(--green-bright), var(--green)); }
+.progress-bar-column:nth-child(3n) .progress-bar { background: linear-gradient(180deg, var(--red-bright), var(--red)); }
+.progress-bar-column small { color: var(--muted); font-size: .62rem; }
+.empty-progress { min-height: 150px; display: grid; place-content: center; text-align: center; }
+.empty-progress strong, .empty-progress span { display: block; }
+.empty-progress span, .muted-copy { margin-top: 6px; color: var(--muted); font-size: .78rem; }
+.recent-legs { display: grid; gap: 7px; margin-top: 13px; }
+.recent-legs > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 11px; border-radius: 12px; background: rgba(0,0,0,.2); }
+.recent-legs > div > div:last-child { text-align: right; }
+.recent-legs strong, .recent-legs span { display: block; }
+.recent-legs span { margin-top: 2px; color: var(--muted); font-size: .68rem; }
+@media (min-width: 560px) { .progress-metrics { grid-template-columns: repeat(5, 1fr); } }
+
+.match-length-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.match-length-grid button {
+  min-height: 58px;
+  padding: 10px 11px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  color: var(--text);
+  background: var(--black-soft);
+}
+.match-length-grid strong,
+.match-length-grid span { display: block; }
+.match-length-grid strong { font-size: .84rem; }
+.match-length-grid span { margin-top: 3px; color: var(--muted); font-size: .68rem; }
+.match-length-grid button.active {
+  border-color: var(--red-bright);
+  background: linear-gradient(145deg, rgba(197,43,50,.2), rgba(255,255,255,.025)), var(--black-soft);
+}
+.confirmation-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(8px);
+}
+.confirmation-card {
+  width: min(100%, 440px);
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--red);
+  border-radius: 22px;
+  background: linear-gradient(155deg, #1c231f, #090c0a);
+  box-shadow: 0 26px 90px rgba(0,0,0,.68);
+}
+.confirmation-card h2 {
+  margin: 15px 0 8px;
+  font-size: clamp(1.65rem, 7vw, 2.35rem);
+  line-height: 1;
+}
+.confirmation-card p {
+  margin: 0 0 17px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.checkout-dart-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.checkout-dart-grid button,
+.bust-button {
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  color: var(--text);
+  background: #101512;
+  font-weight: 850;
+}
+.checkout-dart-grid button {
+  border-color: rgba(37,169,101,.5);
+  background: rgba(22,131,77,.16);
+}
+.bust-button {
+  width: 100%;
+  margin-top: 9px;
+  border-color: rgba(226,59,67,.45);
+  background: rgba(197,43,50,.13);
+}
+.modal-cancel {
+  display: block;
+  margin: 10px auto 0;
+}
+.match-complete-card { text-align: center; }
+.match-score-summary {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+}
+.match-score-summary div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: rgba(255,255,255,.035);
+}
+.match-score-summary strong { font-size: 1.45rem; }
+
+/* Setup clarity and persistent score-entry preference */
+.player-name-field { display: grid; gap: 6px; }
+.player-name-field > span { color: var(--muted); font-size: .7rem; font-weight: 800; letter-spacing: .045em; text-transform: uppercase; }
+.input-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.input-mode-grid button { min-height: 68px; padding: 12px 13px; text-align: left; border: 1px solid var(--border); border-radius: 15px; color: var(--text); background: var(--black-soft); }
+.input-mode-grid strong, .input-mode-grid > button > span { display: block; }
+.input-mode-grid strong { font-size: .86rem; }
+.input-mode-grid strong span { display: inline-block; min-width: 28px; color: var(--cream); }
+.input-mode-grid > button > span { margin-top: 5px; color: var(--muted); font-size: .7rem; line-height: 1.25; }
+.input-mode-grid button.active { border-color: var(--green-bright); background: linear-gradient(145deg, rgba(22,131,77,.22), rgba(255,255,255,.025)), var(--black-soft); }
+
+/* In-game keypad / dartboard switch */
+.entry-display { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 7px 10px; }
+.entry-display > span:first-child { grid-column: 1; grid-row: 1; }
+.entry-display > strong { grid-column: 2; grid-row: 1; min-width: 56px; text-align: right; }
+.entry-mode-switch { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.entry-mode-switch button { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--border); border-radius: 11px; color: var(--muted); background: #0d120f; font-size: .72rem; font-weight: 850; }
+.entry-mode-switch button span { color: inherit; font-size: inherit; }
+.entry-mode-switch button.active { color: white; border-color: var(--green-bright); background: rgba(22,131,77,.24); }
+.dartboard-entry-panel { padding-bottom: 14px; }
+.inline-dartboard { margin-top: 2px; }
+
+/* Standard dartboard colours and visible wire */
+.board-surround { fill: #0b0c0b; stroke: #d4cec0; stroke-width: 1.3; }
+.board-segment { stroke: #b9b3a6; stroke-width: .42; }
+.board-segment.red { fill: #b8292f; }
+.board-segment.green { fill: #147445; }
+.board-segment.dark { fill: #151714; }
+.board-segment.light { fill: #e4d8bd; }
+.board-wire { fill: none; stroke: #c8c1b3; stroke-width: .5; pointer-events: none; }
+.board-number { fill: #f6f3e9; font-size: 6.4px; font-weight: 900; dominant-baseline: middle; }
+
+/* Optical centring for the score confirmation */
+.score-flash strong { display: flex; align-items: center; justify-content: center; padding: 0; }
+.score-flash strong span { display: block; line-height: .78; transform: translateY(-.025em); font-variant-numeric: tabular-nums; }
+
+/* Keep the dartboard submit action as prominent as Enter score */
