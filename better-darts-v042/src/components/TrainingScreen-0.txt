@@ -1,0 +1,141 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Dartboard from "./Dartboard";
+import type { DartHit, EntryMode, PlayerProfile, TrainingSession } from "@/lib/types";
+import { newId } from "@/lib/storage";
+
+const QUICK_SCORES = [26, 41, 45, 60, 81, 100, 140, 180];
+const DOUBLE_TARGETS = [...Array.from({ length: 20 }, (_, index) => index + 1), 25];
+
+type Props = {
+  profile: PlayerProfile;
+  sessions: TrainingSession[];
+  entryMode: EntryMode;
+  onEntryModeChange: (mode: EntryMode) => void;
+  onComplete: (session: TrainingSession) => void;
+};
+
+type TrainingMode = "home" | "scoring" | "doubles" | "summary";
+
+function NumberPad({ value, onChange, onSubmit }: { value: string; onChange: (value: string) => void; onSubmit: () => void }) {
+  return (
+    <div className="training-number-pad">
+      <div className="entry-display simple"><span>Visit score</span><strong>{value || "0"}</strong></div>
+      <div className="number-grid">
+        {[1,2,3,4,5,6,7,8,9].map((number) => <button key={number} onClick={() => onChange(`${value}${number}`.slice(0, 3))}>{number}</button>)}
+        <button onClick={() => onChange(value.slice(0, -1))}>⌫</button>
+        <button onClick={() => onChange(`${value}0`.slice(0, 3))}>0</button>
+        <button onClick={() => onChange("")}>Clear</button>
+      </div>
+      <div className="quick-row">
+        {QUICK_SCORES.map((score) => <button key={score} onClick={() => onChange(String(score))}>{score}</button>)}
+      </div>
+      <button className="primary-button score-button" onClick={onSubmit}>Record visit</button>
+    </div>
+  );
+}
+
+export default function TrainingScreen({ profile, sessions, entryMode, onEntryModeChange, onComplete }: Props) {
+  const [mode, setMode] = useState<TrainingMode>("home");
+  const [scores, setScores] = useState<number[]>([]);
+  const [entry, setEntry] = useState("");
+  const [hits, setHits] = useState<DartHit[]>([]);
+  const [doubleResults, setDoubleResults] = useState<Array<number | null>>([]);
+  const [lastSession, setLastSession] = useState<TrainingSession | null>(null);
+  const [message, setMessage] = useState("");
+
+  const profileSessions = sessions.filter((session) => session.profileId === profile.id);
+  const recent = profileSessions.slice(-4).reverse();
+  const scoringAverage = scores.length ? (scores.reduce((sum, score) => sum + score, 0) / (scores.length * 3)) * 3 : 0;
+  const currentDoubleIndex = doubleResults.length;
+  const currentDouble = DOUBLE_TARGETS[currentDoubleIndex];
+
+  const summaryCopy = useMemo(() => {
+    if (!lastSession) return null;
+    if (lastSession.kind === "scoring-10") {
+      return `${lastSession.average.toFixed(2)} average · ${lastSession.hundreds} scores of 100+`;
+    }
+    return `${lastSession.hits}/${lastSession.targets} doubles hit · ${lastSession.hitRate.toFixed(0)}%`;
+  }, [lastSession]);
+
+  function resetTraining(nextMode: TrainingMode) {
+    setScores([]);
+    setEntry("");
+    setHits([]);
+    setDoubleResults([]);
+    setLastSession(null);
+    setMessage("");
+    setMode(nextMode);
+  }
+
+  function recordScoringVisit(score: number) {
+    if (!Number.isInteger(score) || score < 0 || score > 180) {
+      setMessage("Enter a score between 0 and 180.");
+      return;
+    }
+    const next = [...scores, score];
+    setScores(next);
+    setEntry("");
+    setHits([]);
+    setMessage(`Visit ${next.length} recorded: ${score}`);
+    if (next.length === 10) {
+      const total = next.reduce((sum, item) => sum + item, 0);
+      const session: TrainingSession = {
+        id: newId("training"),
+        profileId: profile.id,
+        kind: "scoring-10",
+        scores: next,
+        darts: 30,
+        average: total / 10,
+        hundreds: next.filter((item) => item >= 100).length,
+        oneForties: next.filter((item) => item >= 140).length,
+        oneEighties: next.filter((item) => item === 180).length,
+        completedAt: new Date().toISOString()
+      };
+      onComplete(session);
+      setLastSession(session);
+      setMode("summary");
+    }
+  }
+
+  function submitDartboardTraining() {
+    if (!hits.length) return;
+    recordScoringVisit(hits.reduce((sum, hit) => sum + hit.score, 0));
+  }
+
+  function recordDouble(darts: 1 | 2 | 3 | null) {
+    const next = [...doubleResults, darts];
+    setDoubleResults(next);
+    if (next.length === DOUBLE_TARGETS.length) {
+      const hitsCount = next.filter((item) => item !== null).length;
+      const dartsUsed = next.reduce<number>((sum, item) => sum + (item ?? 3), 0);
+      const session: TrainingSession = {
+        id: newId("training"),
+        profileId: profile.id,
+        kind: "doubles-ladder",
+        targets: DOUBLE_TARGETS.length,
+        hits: hitsCount,
+        dartsUsed,
+        hitRate: (hitsCount / DOUBLE_TARGETS.length) * 100,
+        completedAt: new Date().toISOString()
+      };
+      onComplete(session);
+      setLastSession(session);
+      setMode("summary");
+    }
+  }
+
+  if (mode === "scoring") {
+    return (
+      <main className="landing-shell section-shell">
+        <header className="section-header"><button className="icon-button" onClick={() => setMode("home")}>←</button><div><p className="eyebrow">SCORING PRACTICE</p><p className="brand-subtitle">10 visits · {profile.name}</p></div></header>
+        <section className="training-score-hero">
+          <div><span>Visit</span><strong>{Math.min(scores.length + 1, 10)}/10</strong></div>
+          <div><span>Live average</span><strong>{scoringAverage.toFixed(2)}</strong></div>
+        </section>
+        <div className="entry-mode-switch training-switch">
+          <button className={entryMode === "keypad" ? "active" : ""} onClick={() => onEntryModeChange("keypad")}><span>123</span> Keypad</button>
+          <button className={entryMode === "dartboard" ? "active" : ""} onClick={() => onEntryModeChange("dartboard")}><span>🎯</span> Dartboard</button>
+        </div>
+        <section className="entry-panel training-entry-panel">
