@@ -1,0 +1,170 @@
+        setPendingCheckout({ scored, minDarts });
+        return;
+      }
+    }
+
+    const bust = remaining < 0 || remaining === 1 || (remaining === 0 && finalDartWasDouble === false);
+    const darts = bust ? 3 : requestedDarts;
+
+    if (bust) {
+      flashVisitFeedback({ kind: "bust", value: scored, message: "BUST" });
+      setHistory((items) => [...items, { playerIndex: currentPlayer, previousScore, scored: 0, darts, previousDartsThrown, previousPointsScored, previousLegStarter: legStarter, previousPlayers: players.map((player) => ({ ...player })) }]);
+      setPlayers((current) => current.map((player, index) => index === currentPlayer ? { ...player, dartsThrown: player.dartsThrown + 3 } : player));
+      setMessage(`${active.name} busts — score remains ${previousScore}`);
+      setCurrentPlayer((currentPlayer + 1) % players.length);
+      setEntry("");
+      return;
+    }
+
+    flashVisitFeedback({ kind: "score", value: scored, message: "SCORE" });
+
+    if (remaining === 0) {
+      const completedLegId = newId("leg");
+      const finalDarts = active.dartsThrown + darts;
+      const finalPoints = active.pointsScored + scored;
+      const finalAverage = finalDarts ? (finalPoints / finalDarts) * 3 : 0;
+      const nextLegs = active.legs + 1;
+      const firstTo = Math.ceil(bestOf / 2);
+      const hasWonMatch = playerCount === 2 && nextLegs >= firstTo;
+      const nextStarter = playerCount === 1 ? 0 : (legStarter + 1) % players.length;
+      const completedMatchId = hasWonMatch ? newId("match") : undefined;
+
+      setHistory((items) => [...items, { playerIndex: currentPlayer, previousScore, scored, darts, previousDartsThrown, previousPointsScored, previousLegStarter: legStarter, previousPlayers: players.map((player) => ({ ...player })), legCompleted: true, completedLegId: currentPlayer === 0 ? completedLegId : undefined, completedMatchId }]);
+
+      if (currentPlayer === 0) {
+        setData((current) => ({
+          ...current,
+          completedLegs: [...current.completedLegs, { id: completedLegId, profileId: activeProfile.id, playerName: activeProfile.name, format, darts: finalDarts, average: finalAverage, completedAt: new Date().toISOString() }]
+        }));
+      }
+
+      const finalPlayers = players.map((player, index) => ({ ...player, legs: index === currentPlayer ? player.legs + 1 : player.legs }));
+      if (hasWonMatch && completedMatchId) {
+        setData((current) => ({
+          ...current,
+          completedMatches: [...current.completedMatches, { id: completedMatchId, profileId: activeProfile.id, format, bestOf, winnerName: active.name, players: finalPlayers.map((player) => ({ name: player.name, legs: player.legs })), completedAt: new Date().toISOString() }]
+        }));
+      }
+
+      setPlayers((current) => current.map((player, index) => index === currentPlayer
+        ? { ...player, score: format, legs: player.legs + 1, dartsThrown: 0, pointsScored: 0 }
+        : { ...player, score: format, dartsThrown: 0, pointsScored: 0 }
+      ));
+      setLegStarter(nextStarter);
+      setCurrentPlayer(nextStarter);
+      if (hasWonMatch) {
+        setMatchWinner(active.name);
+        const opponentLegs = finalPlayers.find((_, index) => index !== currentPlayer)?.legs ?? 0;
+        setMessage(`${active.name} wins the match ${nextLegs}–${opponentLegs}`);
+      } else {
+        setMessage(`${active.name} completes the leg in ${finalDarts} darts · ${finalAverage.toFixed(2)} average`);
+      }
+    } else {
+      setHistory((items) => [...items, { playerIndex: currentPlayer, previousScore, scored, darts, previousDartsThrown, previousPointsScored, previousLegStarter: legStarter, previousPlayers: players.map((player) => ({ ...player })) }]);
+      setPlayers((current) => current.map((player, index) => index === currentPlayer ? { ...player, score: remaining, dartsThrown: player.dartsThrown + darts, pointsScored: player.pointsScored + scored } : player));
+      setMessage(`${active.name} scored ${scored}`);
+      setCurrentPlayer((currentPlayer + 1) % players.length);
+    }
+    setEntry("");
+  }
+
+  function confirmTypedCheckout(darts: 1 | 2 | 3) {
+    if (!pendingCheckout) return;
+    const scored = pendingCheckout.scored;
+    setPendingCheckout(null);
+    submitScore(scored, darts, true);
+  }
+
+  function markTypedCheckoutAsBust() {
+    if (!pendingCheckout) return;
+    const scored = pendingCheckout.scored;
+    setPendingCheckout(null);
+    submitScore(scored, 3, false);
+  }
+
+  function submitDartboardVisit() {
+    if (!dartHits.length) return;
+    const total = dartHits.reduce((sum, hit) => sum + hit.score, 0);
+    submitScore(total, dartHits.length, dartHits.at(-1)?.isDouble ?? false);
+    setDartHits([]);
+  }
+
+  function undo() {
+    const last = history.at(-1);
+    if (!last) return;
+    if (last.previousPlayers?.length) {
+      setPlayers(last.previousPlayers.map((player) => ({ ...player })));
+    } else {
+      setPlayers((current) => current.map((player, index) => index === last.playerIndex
+        ? { ...player, score: last.previousScore, dartsThrown: last.previousDartsThrown, pointsScored: last.previousPointsScored, legs: last.legCompleted ? Math.max(0, player.legs - 1) : player.legs }
+        : last.legCompleted ? { ...player, score: format, dartsThrown: 0, pointsScored: 0 } : player
+      ));
+    }
+    setData((current) => ({
+      ...current,
+      completedLegs: last.completedLegId ? current.completedLegs.filter((leg) => leg.id !== last.completedLegId) : current.completedLegs,
+      completedMatches: last.completedMatchId ? current.completedMatches.filter((match) => match.id !== last.completedMatchId) : current.completedMatches
+    }));
+    setMatchWinner(null);
+    setLegStarter(last.previousLegStarter ?? 0);
+    setCurrentPlayer(last.playerIndex);
+    setHistory((items) => items.slice(0, -1));
+    setMessage("Last visit undone");
+  }
+
+  function completeTraining(session: TrainingSession) {
+    setData((current) => ({ ...current, trainingSessions: [...current.trainingSessions, session] }));
+  }
+
+  if (started) {
+    return <GameScreen
+      format={format}
+      playerCount={playerCount}
+      bestOf={bestOf}
+      players={players}
+      currentPlayer={currentPlayer}
+      checkoutHint={checkoutHint}
+      entryMode={entryMode}
+      entry={entry}
+      dartHits={dartHits}
+      message={message}
+      visitFeedback={visitFeedback}
+      pendingCheckout={pendingCheckout}
+      matchWinner={matchWinner}
+      canUndo={history.length > 0}
+      onExit={() => setStarted(false)}
+      onUndo={undo}
+      onEntryMode={chooseEntryMode}
+      onEntry={setEntry}
+      onDartHits={setDartHits}
+      onSubmitScore={(score) => submitScore(score)}
+      onSubmitDartboard={submitDartboardVisit}
+      onConfirmCheckout={confirmTypedCheckout}
+      onCheckoutBust={markTypedCheckoutAsBust}
+      onCancelCheckout={() => setPendingCheckout(null)}
+      onNewMatch={() => { setStarted(false); setMatchWinner(null); setScreen("play"); }}
+      onViewProgress={() => { setStarted(false); setMatchWinner(null); setScreen("progress"); }}
+    />;
+  }
+
+  const chrome = <SiteChrome active={screen} profile={activeProfile} onSelect={setScreen} />;
+
+  if (screen === "train") return <>{chrome}<TrainingScreen profile={activeProfile} sessions={data.trainingSessions} entryMode={entryMode} onEntryModeChange={chooseEntryMode} onComplete={completeTraining} /></>;
+  if (screen === "progress") return <>{chrome}<ProgressScreen data={data} profile={activeProfile} /></>;
+  if (screen === "profile") return <>{chrome}<ProfileScreen data={data} onChange={updateData} /></>;
+
+  return <>{chrome}<SetupScreen
+    profile={activeProfile}
+    format={format}
+    playerCount={playerCount}
+    bestOf={bestOf}
+    players={players}
+    entryMode={entryMode}
+    onFormat={chooseFormat}
+    onPlayerCount={choosePlayerCount}
+    onBestOf={setBestOf}
+    onPlayers={setPlayers}
+    onEntryMode={chooseEntryMode}
+    onStart={beginGame}
+  /></>;
+}
